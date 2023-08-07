@@ -25,5 +25,5 @@ repos:
     hooks:
     - id: black
       additional_dependencies: ["pyproject"]
-      args: [--line-length=115]
+      args: [--line-length=110]
       language_version: python3.10
