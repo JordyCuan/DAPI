@@ -28,20 +28,22 @@ class BaseRepository:
             )
         return self.model
 
-    # def get_by_id(self, *, id: int, ignore_deleted: bool = False) -> APIBaseModel:
     def get_by_id(self, *, id: int) -> APIBaseModel:
         filters: dict[str, Any] = {"id": id}
-        # if ignore_deleted:
-        #     filters["deleted_at"] = None  # TODO: Cohesion: Not all models could have this one
         return self.query_where(**filters).one()
 
     def get(self, **filters: Any) -> APIBaseModel:
         return self.query_where(**filters).one()
 
     def list(self, filter_manager=None, **filters: Any) -> List[APIBaseModel]:
+        query = self._query()
+        query = self.apply_list_filters(query, filter_manager=filter_manager, **filters)
+        return query.all()
+
+    def apply_list_filters(self, query: Query, filter_manager=None, **filters) -> Query:
         if filter_manager:
-            return filter_manager.apply(self.session.query(self.model)).all()
-        return self.query_where(**filters).all()
+            query = filter_manager.apply(query).all()
+        return query.filter_by(**filters)
 
     def create(self, *, entity: Dict) -> APIBaseModel:
         new_record = self.model(**entity)
@@ -49,7 +51,6 @@ class BaseRepository:
         return new_record
 
     def update(self, *, id: int, entity: Dict) -> APIBaseModel:
-        # if "id" in entity and id != entity["id"]:
         if id != entity.pop("id", id):  # TODO: Handle it as http 422 code?
             # TODO: ValueError only works on exceptions raised by Pydantic. This one should be changed
             raise ValueError("ID in the entity does not match the given ID.")
@@ -59,25 +60,12 @@ class BaseRepository:
         return record.one()
 
     def destroy(self, *, id: int) -> APIBaseModel:
-        record = self.get_by_id(id=id)  # ignore_deleted=False
+        record = self.get_by_id(id=id)
         self.session.delete(record)
         return record
 
-    # def soft_destroy(self, *, id: int) -> APIBaseModel:
-    #     record = self.get_by_id(id=id)
-    #     record.deleted_at = get_now_utc_datetime()  # TODO: Use overwrite?
-    #     return record
-
     def apply_wrap_to(self) -> List[str]:
-        return [
-            "get_by_id",
-            "get",
-            "list",
-            "create",
-            "update",
-            "destroy",
-            # "soft_destroy"
-        ]
+        return ["get_by_id", "get", "list", "create", "update", "destroy"]
 
     def get_execution_wrapper(self, func: Callable[..., Any]) -> Callable[..., Any]:
         """This method encapsulates functionality that can be executed before and after each operation"""
@@ -87,6 +75,7 @@ class BaseRepository:
             self.before_execution(func.__name__, *args, **kwargs)
             result = func(*args, **kwargs)
             self.session.flush()
+            # Retrieve data
             self.after_execution(
                 func.__name__, *args, **kwargs
             )  # TODO: Or maybe return the result value from `after_execution`?
@@ -102,4 +91,7 @@ class BaseRepository:
             self.session.commit()
 
     def query_where(self, **filters: Any) -> Query:
-        return self.session.query(self.model).filter_by(**filters)
+        return self._query().filter_by(**filters)
+
+    def _query(self) -> Query:
+        return self.session.query(self.model)

@@ -16,13 +16,3 @@ def apply_session(target: Type[_T]) -> Callable[[Session], _T]:
         return target(session=session)
 
     return _apply_session
-
-
-from pydantic import BaseModel
-
-
-def apply_serialization(target: Type[_T]) -> Callable[[Session], _T]:
-    def _apply_serialization(serialized: Session = Depends(get_database)) -> _T:
-        return target(payload=serialized)
-
-    return _apply_serialization

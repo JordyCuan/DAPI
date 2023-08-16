@@ -1,11 +1,10 @@
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type
 
 from pydantic import BaseModel, ConfigDict, Extra, root_validator
-from sqlalchemy import Column, and_, asc, between, desc, or_
-from sqlalchemy.orm import MappedColumn, Query
+from sqlalchemy import and_, asc, desc
+from sqlalchemy.orm import Query
 
 from utils.database.repository import APIBaseModel
-from utils.exceptions import ImproperlyConfigured
 
 
 class BaseFilterSchema(BaseModel):
@@ -76,70 +75,3 @@ class BaseFilterManager:
         # if page and page_size:
         #     return self.paginate(new_query, page, page_size)
         return new_query
-
-
-# class BaseFilterManager:
-#     model: Type[APIBaseModel]
-
-#     def __init__(self, filters: Dict[str, Any]) -> None:
-#         self.filters = filters
-
-#     def filter(self, query, filters: Optional[Dict[str, Any]]):
-#         if filters is None:
-#             return query
-#         conditions = []
-#         for key, value in filters.items():
-#             if "__" in key:
-#                 field, op = key.split("__")
-#                 if not self.is_filterable(field, op):
-#                     continue
-#                 column = getattr(self.model, field)
-#                 if op == "gt":
-#                     conditions.append(column > value)
-#                 elif op == "gte":
-#                     conditions.append(column >= value)
-#                 elif op == "lt":
-#                     conditions.append(column < value)
-#                 elif op == "lte":
-#                     conditions.append(column <= value)
-#                 elif op == "eq":
-#                     conditions.append(column == value)
-#                 elif op == "ieq":  # Case insensitive equals
-#                     conditions.append(column.ilike(value))
-#                 elif op == "contains":
-#                     conditions.append(column.contains(value))
-#                 elif op == "icontains":  # Case insensitive contains
-#                     conditions.append(column.ilike(f"%{value}%"))
-#                 elif op == "isnull":
-#                     conditions.append(column.is_(None) if value else column.isnot(None))
-#             else:
-#                 conditions.append(getattr(self.model, key) == value)
-#         return query.filter(and_(*conditions))
-
-#     def order(self, query, orders: Optional[List[str]]):
-#         if orders is None:
-#             return query
-#         for order in orders:
-#             if order.startswith("-"):
-#                 query = query.order_by(desc(getattr(self.model, order[1:])))
-#             else:
-#                 query = query.order_by(asc(getattr(self.model, order)))
-#         return query
-
-#     def paginate(self, query, page: int, page_size: int):
-#         return query.offset((page - 1) * page_size).limit(page_size)
-
-#     def apply(
-#         self,
-#         query,
-#         filters: Optional[Dict[str, Any]],
-#         orders: Optional[List[str]],
-#         page: int = 1,
-#         page_size: int = 10,
-#     ):
-#         return self.paginate_query(
-#             self.order_by(self.filter_query(query, filters), orders), page, page_size
-#         )
-
-#     def is_filterable(self, field: str, op: str) -> bool:
-#         return field in self._fields and op in self._fields[field]
