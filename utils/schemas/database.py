@@ -14,5 +14,5 @@ class DatabaseSettingsMixin(BaseModel):
     DATABASE: DatabaseProperties
 
     def get_database_url(self) -> str:
-        props = self.DATABASE.dict()
+        props = self.DATABASE.model_dump()
         return "{engine}://{user}:{password}@{host}:{port}/{name}".format(**props)

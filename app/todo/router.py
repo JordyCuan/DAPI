@@ -1,13 +1,15 @@
-from typing import Annotated
+from typing import Annotated, List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.auth.router import get_current_user
 from app.database.core import get_database
 from utils.exceptions import NotFoundException, UnauthorizedException
+from utils.schemas.filters import FilterParams, OrderParams, PaginationParams
 
-from .dependencies import get_todo_service
+from .dependencies import get_todo_filter_manager, get_todo_service
+from .filters import TodoFilterManager, TodoFilterSchema
 from .models import Todo as TodoModel
 from .repository import Todo as TodoModel
 from .schemas import Todo as TodoSchema
@@ -49,7 +51,7 @@ async def create_todo_by_user(
     if user is None:
         raise UnauthorizedException
 
-    todo_model = TodoModel(**todo.dict())
+    todo_model = TodoModel(**todo.model_dump())
     todo_model.owner_id = user.get("id")
     db.add(todo_model)
     db.commit()
@@ -70,7 +72,7 @@ async def update_todo_by_user(
     if not todo_model:
         raise NotFoundException
 
-    todo_data = todo.dict(exclude_unset=True)
+    todo_data = todo.model_dump(exclude_unset=True)
     for key, value in todo_data.items():
         setattr(todo_model, key, value)
 
@@ -98,6 +100,7 @@ async def destroy_todo_by_user(
 ###################################################
 # BORRAR
 
+
 router = APIRouter(prefix="/todo", tags=["todo"])
 
 
@@ -110,20 +113,23 @@ async def read_item(id: int, service: TodoServiceAnnotation):
 
 
 @router.get("/", status_code=200)
-async def get_all_todo(service: TodoServiceAnnotation):
-    return service.list()
+async def get_all_todo(
+    service: TodoServiceAnnotation,
+    filter_manager: TodoFilterManager = Depends(get_todo_filter_manager),
+):
+    return service.list(filter_manager=filter_manager)
 
 
 @router.post("/", status_code=201)
 async def create_todo(payload: TodoSchema, service: TodoServiceAnnotation):
-    data = payload.dict()
+    data = payload.model_dump()
     service.create(entity=data)
     return data
 
 
 @router.put("/{id}")
 async def update_todo(id: int, payload: TodoSchema, service: TodoServiceAnnotation):
-    data = payload.dict(exclude_unset=True)
+    data = payload.model_dump(exclude_unset=True)
     service.update(id=id, entity=data)
     return data
 

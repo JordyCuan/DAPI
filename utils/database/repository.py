@@ -38,11 +38,12 @@ class BaseRepository:
     def get(self, **filters: Any) -> APIBaseModel:
         return self.query_where(**filters).one()
 
-    def list(self, **filters: Any) -> List[APIBaseModel]:
+    def list(self, filter_manager=None, **filters: Any) -> List[APIBaseModel]:
+        if filter_manager:
+            return filter_manager.apply(self.session.query(self.model)).all()
         return self.query_where(**filters).all()
 
     def create(self, *, entity: Dict) -> APIBaseModel:
-        entity["owner_id"] = 1
         new_record = self.model(**entity)
         self.session.add(new_record)
         return new_record

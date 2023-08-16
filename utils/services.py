@@ -2,16 +2,6 @@ from utils.database.repository import APIBaseModel, BaseRepository
 
 
 class BaseService:
-    """
-    EXAMPLE:
-    class MyService(BaseService):
-        pass
-
-    @router.get("/{id}")
-    async def get_item(id: int, my_service: Annotated[MyService, Depends(get_my_service)]):
-        return my_service.get_by_id(id=id)
-    """
-
     def __init__(self, *, repository: BaseRepository):
         self.repository = repository
 
@@ -21,8 +11,8 @@ class BaseService:
     def get(self, **filters) -> APIBaseModel:
         return self.repository.get(**filters)
 
-    def list(self, **filters) -> list[APIBaseModel]:
-        return self.repository.list(**filters)
+    def list(self, filter_manager=None, **filters) -> list[APIBaseModel]:
+        return self.repository.list(filter_manager=filter_manager, **filters)
 
     def create(self, *, entity: dict) -> APIBaseModel:
         return self.repository.create(entity=entity)
