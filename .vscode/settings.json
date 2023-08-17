@@ -11,6 +11,7 @@
         },
         "**/package-lock.json": true,
         "**/poetry.lock": true,
+        "**/.pytest_cache": true,
     },
     "files.watcherExclude": {
         "**/.git/objects/**": true,
@@ -81,5 +82,10 @@
         // "--disable=attribute-defined-outside-init,django-not-configured,signature-differs,C0115,C0116"
     ],
     "cSpell.words": [
-    ]
+    ],
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }

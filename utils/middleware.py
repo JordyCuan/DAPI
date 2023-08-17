@@ -13,6 +13,6 @@ class SQLAlchemyExceptionHandlerMiddleware(BaseHTTPMiddleware):
         except TimeoutError as exc:
             raise TimeoutException from exc
         # TODO: Is it necessary to handle MultipleObjectsReturned?
-        except SQLAlchemyError as exc:
-            raise ServerError  # Global default server exception for any other SQLAlchemy error
+        # except SQLAlchemyError as exc:
+        #     raise ServerError  # Global default server exception for any other SQLAlchemy error
         return response

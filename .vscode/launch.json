@@ -25,6 +25,28 @@
                 "head"
             ],
             "justMyCode": false
+        },
+        {
+            "name": "Test",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "--rootdir",
+                "${workspaceFolder}/",
+                "-s",
+                "--cache-clear",
+                "--disable-warnings",
+                // ==>> Module!
+                "tests/test_services/test_news.py::TestNewsService::test_create_news_post_on_success"
+                // "tests",
+                // ==>> Coverage!
+                // --cov-report term-missing --cov=./ --cov-config=pytest-cov.ini
+            ],
+            "justMyCode": false,
+            "console": "integratedTerminal",
+            "env": {
+            },
         }
     ]
 }

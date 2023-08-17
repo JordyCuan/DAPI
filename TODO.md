@@ -1,15 +1,14 @@
 
-Errores [In Progress]
+Error Handlers [In Progress]
 
-Filtros [Done?]
+Filtros [Done]
+
+Order By (with lists) [In Progress]
 
 Paginación
 
 Documentación
 
-Settear Testing envs
-
-OpenAPI Schema
-* @app.get("/healthcheck", include_in_schema=False)
+Settear Testing envs [In Progress]
 
 Autenticación?

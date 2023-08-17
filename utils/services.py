@@ -6,13 +6,14 @@ class BaseService:
         self.repository = repository
 
     def get_by_id(self, *, id: int) -> APIBaseModel:
-        return self.repository.get_by_id(id=id)
+        return self.repository.retrieve_by_id(id=id)
 
     def get(self, **filters) -> APIBaseModel:
-        return self.repository.get(**filters)
+        return self.repository.retrieve(**filters)
 
     def list(self, filter_manager=None, **filters) -> list[APIBaseModel]:
-        return self.repository.list(filter_manager=filter_manager, **filters)
+        self.repository.set_filter_manager(filter_manager)
+        return self.repository.list(**filters)
 
     def create(self, *, entity: dict) -> APIBaseModel:
         return self.repository.create(entity=entity)
@@ -20,5 +21,5 @@ class BaseService:
     def update(self, *, id: int, entity: dict) -> APIBaseModel:
         return self.repository.update(id=id, entity=entity)
 
-    def destroy(self, *, id: int) -> APIBaseModel:
+    def destroy(self, *, id: int) -> None:  # TODO: Temporal. It has to be the response
         return self.repository.destroy(id=id)

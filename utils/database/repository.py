@@ -1,26 +1,201 @@
-from functools import wraps
-from typing import Any, Callable, Dict, List, Type
+from typing import Any, Callable, Dict, List, Optional, Protocol, Type
 
-from sqlalchemy.orm import Session
-from sqlalchemy.orm.query import Query
+from sqlalchemy.orm import Query, Session
 
 from utils.database.models import APIBaseModel
 from utils.exceptions import ImproperlyConfigured
 
-# from utils.datetime import get_now_utc_datetime
+
+class FilterManagerProtocol(Protocol):
+    def filter_queryset(self, query: Query) -> Query:
+        pass
+
+    def order_by_queryset(self, query: Query) -> Query:
+        pass
 
 
-class BaseRepository:
+# class PaginationManagerProtocol(Protocol):
+#     def paginate_queryset(self) -> Query:
+#         pass
+
+
+class ListModelMixin:
+    session: Session
+    get_base_query: Callable[..., Query]
+    # filter_manager: Optional[FilterManagerProtocol]
+    # pagination_manager: Optional[PaginationManagerProtocol]
+
+    def list(self, **filters: Any) -> List[APIBaseModel]:
+        """
+        Args:
+            **filters: Filters to refine the query results.
+
+        Returns:
+            List of APIBaseModel instances.
+        """
+        base_query = self.get_base_query()
+        query = self.list_queryset(base_query, **filters)
+        query = self.filter_queryset(query)
+        return self.order_by_queryset(query).all()
+
+    def list_queryset(self, base_query: Query, **filters: Any) -> Query:
+        """Override for custom list fetching logic."""
+        return base_query.filter_by(**filters)
+
+    def filter_queryset(self, query: Query) -> Query:
+        """Override for custom filter logic."""
+        return query
+
+    def order_by_queryset(self, query: Query) -> Query:
+        """Override for custom ordering logic."""
+        return query
+
+    def paginate_queryset(self, query: Query) -> Query:
+        """Override for custom pagination logic."""
+        return query
+
+    def set_filter_manager(self, filter_manager: FilterManagerProtocol) -> None:
+        if filter_manager:
+            setattr(self, "filter_queryset", filter_manager.filter_queryset)
+            setattr(self, "order_by_queryset", filter_manager.order_by_queryset)
+
+    # def set_pagination_manager(self, pagination_manager: PaginationManagerProtocol) -> None:
+    #     if pagination_manager:
+    #         setattr(self, "paginate_queryset", pagination_manager.filter_queryset)
+
+
+class RetrieveModelMixin:
+    session: Session
+    get_base_query: Callable[..., Query]
+
+    def retrieve_by_id(self, *, id: int) -> APIBaseModel:
+        """
+        Args:
+            id: ID of the entity to retrieve.
+
+        Returns:
+            Single APIBaseModel instance.
+        """
+        base_query = self.get_base_query()
+        return self.retrieve_queryset(base_query, id=id).one()
+
+    def retrieve(self, **filters: Any) -> APIBaseModel:
+        """
+        Args:
+            **filters: Filters to refine the query results.
+
+        Returns:
+            Single APIBaseModel instance.
+        """
+        base_query = self.get_base_query()
+        return self.retrieve_queryset(base_query, **filters).one()
+
+    def retrieve_queryset(self, base_query: Query, **filters: Any) -> Query:
+        """Override for custom retrieval logic."""
+        return base_query.filter_by(**filters)
+
+
+class CreateModelMixin:
+    session: Session
+    get_model: Callable[..., Type[APIBaseModel]]
+
+    def create(self, *, entity: Dict) -> APIBaseModel:
+        """
+        Args:
+            entity: Data dictionary to create a new entity.
+
+        Returns:
+            Newly created APIBaseModel instance.
+        """
+        model = self.get_model()
+        new_record = self.create_queryset(model=model, entity=entity)
+        self.session.add(new_record)
+        self.session.flush()
+        return new_record
+
+    def create_queryset(self, *, model: Type[APIBaseModel], entity: Dict) -> APIBaseModel:
+        """Override for custom object creation logic."""
+        return model(**entity)
+
+
+class UpdateModelMixin:
+    session: Session
+    get_base_query: Callable[..., Query]
+
+    def update(self, *, id: int, entity: Dict) -> APIBaseModel:
+        """
+        Args:
+            id: ID of the entity to update.
+            entity: Data dictionary with updated values.
+
+        Returns:
+            Updated APIBaseModel instance.
+
+        Raises:
+            ValueError: If provided ID doesn't match entity's ID.
+        """
+        # TODO: Popping? References elsewhere?
+        if id != entity.pop("id", id):
+            raise ValueError("ID in the entity does not match the given ID.")
+
+        base_query = self.get_base_query()
+        query = self.update_queryset(base_query, id=id, entity=entity)
+        self.session.flush()
+        return query.one()
+
+    def update_queryset(self, base_query: Query, *, id: int, entity: Dict) -> Query:
+        query = base_query.filter_by(id=id)
+        assert query.count() == 1, "Update on non existing entry or multiple entries found"
+        query.update(entity)
+        return query
+
+
+class DestroyModelMixin:
+    session: Session
+    get_base_query: Callable[..., Query]
+
+    def destroy(self, *, id: int) -> None:
+        """
+        Args:
+            id: ID of the entity to delete.
+        """
+        base_query = self.get_base_query()
+        instance = self.destroy_queryset(base_query, id=id).one()
+        self.perform_destroy(instance)
+        self.session.flush()
+
+    def destroy_queryset(self, base_query: Query, *, id: int) -> Query:
+        query = base_query.filter_by(id=id)
+        assert query.count() == 1, "Update on non existing entry or multiple entries found"
+        return query
+
+    def perform_destroy(self, instance: Type[APIBaseModel]):
+        """
+        Handle deletion of an instance. Override for custom delete behavior, e.g., soft deletes.
+        In case of soft-delete this method can be easily overwritten and
+        set it as `instance.deleted_at = now()`
+        """
+        self.session.delete(instance)
+
+
+class BaseRepository(
+    ListModelMixin,
+    RetrieveModelMixin,
+    CreateModelMixin,
+    UpdateModelMixin,
+    DestroyModelMixin,
+):
     model: Type[APIBaseModel]
 
     def __init__(self, *, session: Session):
+        """
+        Args:
+            session: SQLAlchemy session instance.
+        """
         self.session = session
 
-        for operation in self.apply_wrap_to():
-            method = getattr(self, operation)
-            setattr(self, operation, self.get_execution_wrapper(method))
-
     def get_model(self) -> Type[APIBaseModel]:
+        """Get the model associated with this repository. Raise exception if not set."""
         if self.model is None:
             raise ImproperlyConfigured(
                 "%(cls)s is missing a Model. Define %(cls)s.model, or override "
@@ -28,70 +203,9 @@ class BaseRepository:
             )
         return self.model
 
-    def get_by_id(self, *, id: int) -> APIBaseModel:
-        filters: dict[str, Any] = {"id": id}
-        return self.query_where(**filters).one()
+    def get_base_query(self) -> Query[APIBaseModel]:
+        """Provides the base query associated with the model of the repository."""
+        return self.session.query(self.get_model())
 
-    def get(self, **filters: Any) -> APIBaseModel:
-        return self.query_where(**filters).one()
-
-    def list(self, filter_manager=None, **filters: Any) -> List[APIBaseModel]:
-        query = self._query()
-        query = self.apply_list_filters(query, filter_manager=filter_manager, **filters)
-        return query.all()
-
-    def apply_list_filters(self, query: Query, filter_manager=None, **filters) -> Query:
-        if filter_manager:
-            query = filter_manager.apply(query).all()
-        return query.filter_by(**filters)
-
-    def create(self, *, entity: Dict) -> APIBaseModel:
-        new_record = self.model(**entity)
-        self.session.add(new_record)
-        return new_record
-
-    def update(self, *, id: int, entity: Dict) -> APIBaseModel:
-        if id != entity.pop("id", id):  # TODO: Handle it as http 422 code?
-            # TODO: ValueError only works on exceptions raised by Pydantic. This one should be changed
-            raise ValueError("ID in the entity does not match the given ID.")
-
-        record = self.query_where(id=id)
-        record.update(entity)
-        return record.one()
-
-    def destroy(self, *, id: int) -> APIBaseModel:
-        record = self.get_by_id(id=id)
-        self.session.delete(record)
-        return record
-
-    def apply_wrap_to(self) -> List[str]:
-        return ["get_by_id", "get", "list", "create", "update", "destroy"]
-
-    def get_execution_wrapper(self, func: Callable[..., Any]) -> Callable[..., Any]:
-        """This method encapsulates functionality that can be executed before and after each operation"""
-
-        @wraps(func)
-        def call(*args: Any, **kwargs: Any) -> Any:
-            self.before_execution(func.__name__, *args, **kwargs)
-            result = func(*args, **kwargs)
-            self.session.flush()
-            # Retrieve data
-            self.after_execution(
-                func.__name__, *args, **kwargs
-            )  # TODO: Or maybe return the result value from `after_execution`?
-            return result
-
-        return call
-
-    def before_execution(self, method: str, *args: Any, **kwargs: Any) -> None:
-        pass
-
-    def after_execution(self, method: str, *args: Any, **kwargs: Any) -> None:
-        if method in ["create", "update", "destroy", "soft_destroy"]:
-            self.session.commit()
-
-    def query_where(self, **filters: Any) -> Query:
-        return self._query().filter_by(**filters)
-
-    def _query(self) -> Query:
-        return self.session.query(self.model)
+    def perform_commit(self):
+        self.session.commit()
