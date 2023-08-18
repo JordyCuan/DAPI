@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import Extra
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from utils.schemas.database import DatabaseSettingsMixin
+from utils.database.schemas import DatabaseSettingsMixin
 
 
 class Settings(BaseSettings, DatabaseSettingsMixin):

@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from app.auth.router import get_current_user
 from app.database.core import get_database
 from utils.exceptions import NotFoundException, UnauthorizedException
-from utils.schemas.filters import FilterParams, OrderParams, PaginationParams
 
 from .dependencies import get_todo_filter_manager, get_todo_service
 from .filters import TodoFilterManager, TodoFilterSchema
@@ -14,6 +13,9 @@ from .models import Todo as TodoModel
 from .repository import Todo as TodoModel
 from .schemas import Todo as TodoSchema
 from .services import TodoService
+
+# from utils.schemas.filters import FilterParams, OrderParams, PaginationParams
+
 
 router = APIRouter(prefix="/todo", tags=["todo"])
 
