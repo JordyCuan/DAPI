@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database.core import get_database
-from utils.auth import get_bcrypt_context
+from utils.crypt import get_bcrypt_context
 
 from .models import User
 from .schemas import CreateUser

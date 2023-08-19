@@ -116,8 +116,7 @@ async def read_item(id: int, service: TodoServiceAnnotation):
 
 @router.get("/", status_code=200)
 async def get_all_todo(
-    service: TodoServiceAnnotation,
-    filter_manager: TodoFilterManager = Depends(get_todo_filter_manager),
+    service: TodoServiceAnnotation, filter_manager: TodoFilterManager = Depends(get_todo_filter_manager)
 ):
     return service.list(filter_manager=filter_manager)
 

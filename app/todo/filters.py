@@ -1,5 +1,7 @@
 from typing import List, Optional
 
+from sqlalchemy.orm import Query
+
 from utils.filters import BaseFilterManager, FilterParam, FilterSchema
 
 from .models import Todo

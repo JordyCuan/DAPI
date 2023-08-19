@@ -1,14 +1,10 @@
 
 Error Handlers [In Progress]
 
-Filtros [Done]
-
 Order By (with lists) [In Progress]
 
-Paginación
+Pagination
 
-Documentación
+Documentation [In Progress]
 
-Settear Testing envs [In Progress]
-
-Autenticación?
+Authentication

@@ -7,10 +7,10 @@ from utils.exceptions import ImproperlyConfigured
 
 
 class FilterManagerProtocol(Protocol):
-    def filter_queryset(self, query: Query) -> Query:
+    def filter_queryset(self, query: Query) -> Query:  # pragma: no cover
         pass
 
-    def order_by_queryset(self, query: Query) -> Query:
+    def order_by_queryset(self, query: Query) -> Query:  # pragma: no cover
         pass
 
 
@@ -22,8 +22,7 @@ class FilterManagerProtocol(Protocol):
 class ListModelMixin:
     session: Session
     get_base_query: Callable[..., Query]
-    # filter_manager: Optional[FilterManagerProtocol]
-    # pagination_manager: Optional[PaginationManagerProtocol]
+    filter_manager: Optional[FilterManagerProtocol] = None
 
     def list(self, **filters: Any) -> List[APIBaseModel]:
         """
@@ -33,10 +32,12 @@ class ListModelMixin:
         Returns:
             List of APIBaseModel instances.
         """
+
         base_query = self.get_base_query()
         query = self.list_queryset(base_query, **filters)
         query = self.filter_queryset(query)
-        return self.order_by_queryset(query).all()
+        query = self.order_by_queryset(query)
+        return query.all()
 
     def list_queryset(self, base_query: Query, **filters: Any) -> Query:
         """Override for custom list fetching logic."""
@@ -44,10 +45,14 @@ class ListModelMixin:
 
     def filter_queryset(self, query: Query) -> Query:
         """Override for custom filter logic."""
+        if self.filter_manager:
+            query = self.filter_manager.filter_queryset(query)
         return query
 
     def order_by_queryset(self, query: Query) -> Query:
         """Override for custom ordering logic."""
+        if self.filter_manager:
+            query = self.filter_manager.order_by_queryset(query)
         return query
 
     def paginate_queryset(self, query: Query) -> Query:
@@ -55,9 +60,10 @@ class ListModelMixin:
         return query
 
     def set_filter_manager(self, filter_manager: FilterManagerProtocol) -> None:
-        if filter_manager:
-            setattr(self, "filter_queryset", filter_manager.filter_queryset)
-            setattr(self, "order_by_queryset", filter_manager.order_by_queryset)
+        # if filter_manager:
+        #     setattr(self, "filter_queryset", filter_manager.filter_queryset)
+        #     setattr(self, "order_by_queryset", filter_manager.order_by_queryset)
+        self.filter_manager = filter_manager
 
     # def set_pagination_manager(self, pagination_manager: PaginationManagerProtocol) -> None:
     #     if pagination_manager:

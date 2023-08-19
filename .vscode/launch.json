@@ -27,21 +27,21 @@
             "justMyCode": false
         },
         {
-            "name": "Test",
+            "name": "PyTest",
             "type": "python",
             "request": "launch",
             "module": "pytest",
             "args": [
-                "--rootdir",
-                "${workspaceFolder}/",
                 "-s",
                 "--cache-clear",
                 "--disable-warnings",
                 // ==>> Module!
-                "tests/test_services/test_news.py::TestNewsService::test_create_news_post_on_success"
-                // "tests",
+                "tests/",
+                // "tests/test_database/test_respository.py::TestBaseRepository::test_list_with_filter_manager",
                 // ==>> Coverage!
-                // --cov-report term-missing --cov=./ --cov-config=pytest-cov.ini
+                "--cov-report",
+                "term-missing:skip-covered",
+                "--cov=./utils/",
             ],
             "justMyCode": false,
             "console": "integratedTerminal",

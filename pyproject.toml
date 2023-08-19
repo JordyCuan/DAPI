@@ -54,6 +54,16 @@ extend-ignore = "E203"
 [flake8]
 extend-ignore = "E203"
 
+[tool.pytest.ini_options]
+addopts = [
+  "--strict-config",
+  "--strict-markers",
+]
+xfail_strict = true
+python_functions = ["test_*"]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

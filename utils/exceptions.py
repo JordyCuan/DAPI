@@ -13,6 +13,9 @@ class HTTPBaseException(HTTPException):
     Base class for custom HTTP exceptions in FastAPI applications.
     """
 
+    status_code: int
+    detail: str
+
     def __init__(self, headers: Optional[Dict[str, Any]] = None) -> None:
         super().__init__(status_code=self.status_code, detail=self.detail, headers=headers)
 

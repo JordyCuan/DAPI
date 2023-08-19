@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.database.core import get_database
 from app.settings import settings
 from app.users.models import User
-from utils.auth import get_bcrypt_context
+from utils.crypt import get_bcrypt_context
 from utils.exceptions import NotFoundException
 
 bcrypt_context = get_bcrypt_context(schemes=["bcrypt"], deprecated="auto")

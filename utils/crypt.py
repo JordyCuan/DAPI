@@ -14,6 +14,3 @@ class BCryptContext:
 
 def get_bcrypt_context(**kwargs):
     return BCryptContext(**kwargs)
-
-
-# TODO: ??? Rename this module?
