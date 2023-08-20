@@ -64,7 +64,7 @@ class BaseFilterManager:
         "icontains": lambda col, val: col.ilike(f"%{val}%"),
     }
 
-    def __init__(self, *, filters: Type[FilterSchema]) -> None:
+    def __init__(self, *, filters: Type[FilterSchema], ordering: Optional[list[str]] = None) -> None:
         """
         Parameters:
         -----------
@@ -72,10 +72,8 @@ class BaseFilterManager:
             A schema containing filtering conditions.
             See `filters.schemas.FilterSchema` for more details.
         """
-        self.filters = filters.model_dump(exclude_none=True, exclude_unset=True)  # type: ignore
-
-        # TODO: How to define `ordering`
-        self.ordering: Optional[list[str]] = getattr(self.filters, "ordering", None)
+        self.filters: dict[str, Any] = filters.model_dump(exclude_none=True, exclude_unset=True)  # type: ignore
+        self.ordering = ordering
 
     def filter_queryset(self, query: Query) -> Query:
         """
@@ -117,12 +115,17 @@ class BaseFilterManager:
         """
         if self.ordering is None:
             return query
-        for order in self.ordering:
-            if order.startswith("-"):
-                query = query.order_by(desc(getattr(self.model, order[1:])))
+
+        order_expressions: list = []
+        for field in self.ordering:
+            if field.startswith("-"):
+                attr = getattr(self.model, field[1:])
+                order_expressions.append(desc(attr))
             else:
-                query = query.order_by(asc(getattr(self.model, order)))
-        return query
+                attr = getattr(self.model, field.lstrip("+"))
+                order_expressions.append(asc(attr))
+
+        return query.order_by(*order_expressions)
 
     def paginate_queryset(self, query: Query) -> Query:
         # TODO: Implement this feature. Is it a part of this?

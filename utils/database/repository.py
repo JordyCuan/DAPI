@@ -6,16 +6,16 @@ from utils.database.models import APIBaseModel
 from utils.exceptions import ImproperlyConfigured
 
 
-class FilterManagerProtocol(Protocol):
-    def filter_queryset(self, query: Query) -> Query:  # pragma: no cover
+class FilterManagerProtocol(Protocol):  # pragma: no cover
+    def filter_queryset(self, query: Query) -> Query:
         pass
 
-    def order_by_queryset(self, query: Query) -> Query:  # pragma: no cover
+    def order_by_queryset(self, query: Query) -> Query:
         pass
 
 
 # class PaginationManagerProtocol(Protocol):
-#     def paginate_queryset(self) -> Query:
+#     def paginate_queryset(self) -> Query:  # pragma: no cover
 #         pass
 
 
@@ -60,10 +60,7 @@ class ListModelMixin:
         return query
 
     def set_filter_manager(self, filter_manager: FilterManagerProtocol) -> None:
-        # if filter_manager:
-        #     setattr(self, "filter_queryset", filter_manager.filter_queryset)
-        #     setattr(self, "order_by_queryset", filter_manager.order_by_queryset)
-        self.filter_manager = filter_manager
+        self.filter_manager = filter_manager  # NOTE: How to keep the repository stateless?
 
     # def set_pagination_manager(self, pagination_manager: PaginationManagerProtocol) -> None:
     #     if pagination_manager:

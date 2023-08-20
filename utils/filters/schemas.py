@@ -1,3 +1,60 @@
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Extra, PrivateAttr, root_validator
+
+
+class FilterMeta:
+    def __init__(self, options=None):
+        self.model = getattr(options, "model", None)
+
+        # NOTE: This is not used yet. WIP!
+        # self.fields = getattr(options, "fields", None)
+        # self.exclude = getattr(options, "exclude", None)
+        # allowed_order_by_fields
+        # order_by_field_name
+
+
+class FilterSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    _meta = PrivateAttr()
+
+    def __new__(cls, **kwargs):
+        _meta = FilterMeta(getattr(cls, "Meta", None))
+        new_class = super(FilterSchema, cls).__new__(cls)
+        # new_class.__init__(**kwargs)
+
+        # This is used for better compatibility with validators
+        # cls._meta = _meta
+        return new_class
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        self._meta = FilterMeta(getattr(self, "Meta", None))
+
+    # TODO: Validate ordering IF DEFINED
+
+    # TODO: Possible bug? extra='forbid' is not working
+    #       UPDATE: This is because of the nature of query params
+
+    @root_validator(pre=True)
+    def check_valid_filter_lookups(cls, values: dict[str, Any]):
+        valid_lookups = ["gt", "gte", "lt", "lte", "eq", "ieq", "contains", "icontains"]
+        # TODO: valid_attrs = valid_lookups +
+        for key in values.keys():
+            if key.count("__") == 1:
+                suffix = key.split("__")[-1]
+                if suffix not in valid_lookups:
+                    raise ValueError(
+                        f"Filter attribute {key} should be a valid lookup: {', '.join(valid_lookups)}"
+                    )
+        return values
+
+
+# class PaginationParams(BaseModel):
+#     page: Optional[int] = Field(1, gt=0)
+#     page_size: Optional[int] = Field(10, gt=0, le=100)
+
+
 """
 schemas.py
 
@@ -29,11 +86,9 @@ Note:
 When adding new schemas, ensure to provide necessary validations and documentation
 for clarity and maintainability.
 """
-from pydantic import BaseModel, ConfigDict, Extra, root_validator
 
 
-class FilterSchema(BaseModel):
-    """
+"""
     Schema to validate and process filter-related query parameters.
 
     The schema checks the validity of filter attributes based on
@@ -52,11 +107,8 @@ class FilterSchema(BaseModel):
         based on the recognized lookups.
     """
 
-    model_config = ConfigDict(extra=Extra.forbid)
 
-    @root_validator(pre=True)
-    def check_valid_filter_lookups(cls, values):
-        """
+"""
         Validates filter attributes based on recognized lookups or operations.
 
         This validator checks if provided filter attributes are constructed
@@ -77,25 +129,3 @@ class FilterSchema(BaseModel):
         ValueError:
             If any filter attribute is invalid.
         """
-        valid_lookups = ["gt", "gte", "lt", "lte", "eq", "ieq", "contains", "icontains", "ordering"]
-        for key in values.keys():
-            if key.count("__") == 1:
-                suffix = key.split("__")[-1]
-                if suffix not in valid_lookups:
-                    raise ValueError(
-                        f"Filter attribute {key} should be a valid lookup: {', '.join(valid_lookups)}"
-                    )
-        return values
-
-
-# class PaginationParams(BaseModel):
-#     page: Optional[int] = Field(1, gt=0)
-#     page_size: Optional[int] = Field(10, gt=0, le=100)
-
-
-# class FilterParams(BaseModel):
-#     filters: Optional[Dict[str, Any]]
-
-
-# class OrderParams(BaseModel):
-#     orders: Optional[List[str]]

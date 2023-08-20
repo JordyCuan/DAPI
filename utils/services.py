@@ -1,7 +1,6 @@
-from typing import Protocol
+from typing import Optional, Protocol
 
-from utils.database.repository import APIBaseModel, BaseRepository
-from utils.filters import BaseFilterManager
+from utils.database.repository import APIBaseModel, FilterManagerProtocol
 
 
 class RepositoryProtocol(Protocol):  # pragma: no cover
@@ -37,7 +36,7 @@ class BaseService:
     def get(self, **filters) -> APIBaseModel:
         return self.repository.retrieve(**filters)
 
-    def list(self, filter_manager=None, **filters) -> list[APIBaseModel]:
+    def list(self, filter_manager: Optional[FilterManagerProtocol] = None, **filters) -> list[APIBaseModel]:
         self.repository.set_filter_manager(filter_manager)
         return self.repository.list(**filters)
 
