@@ -64,7 +64,7 @@ class BaseFilterManager:
         "icontains": lambda col, val: col.ilike(f"%{val}%"),
     }
 
-    def __init__(self, *, filters: Type[FilterSchema], ordering: Optional[list[str]] = None) -> None:
+    def __init__(self, *, filters: FilterSchema, ordering: Optional[list[str]] = None) -> None:
         """
         Parameters:
         -----------
@@ -72,10 +72,10 @@ class BaseFilterManager:
             A schema containing filtering conditions.
             See `filters.schemas.FilterSchema` for more details.
         """
-        self.filters: dict[str, Any] = filters.model_dump(exclude_none=True, exclude_unset=True)  # type: ignore
+        self.filters: dict[str, Any] = filters.model_dump(exclude_none=True, exclude_unset=True)
         self.ordering = ordering
 
-    def filter_queryset(self, query: Query) -> Query:
+    def filter_queryset(self, query: Query[DeclarativeBase]) -> Query[DeclarativeBase]:
         """
         Applies filtering conditions from self.filters to the provided query.
 
@@ -99,7 +99,7 @@ class BaseFilterManager:
                 conditions.append(self.OPERATIONS[op](column, value))
         return query.filter(and_(*conditions))
 
-    def order_by_queryset(self, query: Query) -> Query:
+    def order_by_queryset(self, query: Query[DeclarativeBase]) -> Query[DeclarativeBase]:
         """
         Orders the provided query based on self.ordering.
 
@@ -116,7 +116,7 @@ class BaseFilterManager:
         if self.ordering is None:
             return query
 
-        order_expressions: list = []
+        order_expressions: list = []  # type: ignore[type-arg]
         for field in self.ordering:
             if field.startswith("-"):
                 attr = getattr(self.model, field[1:])
@@ -127,7 +127,7 @@ class BaseFilterManager:
 
         return query.order_by(*order_expressions)
 
-    def paginate_queryset(self, query: Query) -> Query:
+    def paginate_queryset(self, query: Query[DeclarativeBase]) -> Query[DeclarativeBase]:
         # TODO: Implement this feature. Is it a part of this?
         return query
         # return query.offset((page - 1) * page_size).limit(page_size)

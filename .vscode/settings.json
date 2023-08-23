@@ -31,8 +31,7 @@
         }
     },
     "editor.rulers": [
-        108,
-        112
+        110
     ],
     "python.formatting.provider": "black",
     "python.linting.pylintArgs": [
@@ -68,21 +67,19 @@
         "110"
     ],
     "python.linting.enabled": true,
-    // "python.linting.pydocstyleEnabled": true,
+    "python.linting.pydocstyleEnabled": false,
     "python.linting.mypyEnabled": true,
-    "python.linting.banditEnabled": true,
-    "python.linting.flake8Enabled": true,
-    "python.linting.pycodestyleEnabled": true,
-    "python.linting.pylintEnabled": true,
-    "python.linting.flake8Path": "pyflakes",
-    "python.linting.pycodestylePath": "pycodestyle",
-    "python.linting.pycodestyleArgs": [
-        "--max-line-length=110",
-        "--ignore=E501,W503,E722",
-        // "--disable=attribute-defined-outside-init,django-not-configured,signature-differs,C0115,C0116"
-    ],
-    "cSpell.words": [
-    ],
+    "python.linting.banditEnabled": false,
+    "python.linting.flake8Enabled": false,
+    "python.linting.pycodestyleEnabled": false,
+    "python.linting.pylintEnabled": false,
+    // "python.linting.flake8Path": "pyflakes",
+    // "python.linting.pycodestylePath": "pycodestyle",
+    // "python.linting.pycodestyleArgs": [
+    //     "--max-line-length=110",
+    //     "--ignore=E501,W503,E722",
+    //     // "--disable=attribute-defined-outside-init,django-not-configured,signature-differs,C0115,C0116"
+    // ],
     "python.testing.pytestArgs": [
         "tests"
     ],

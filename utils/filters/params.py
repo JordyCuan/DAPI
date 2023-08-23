@@ -26,6 +26,7 @@ Note:
 -----
 When extending or adding new classes, ensure they align with FastAPI's request parsing mechanisms.
 """
+from typing import Any
 
 from fastapi import params
 
@@ -58,5 +59,5 @@ class FilterParam(params.Query):  # noqa: N802
     ```
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any):
         super().__init__(None, **kwargs)

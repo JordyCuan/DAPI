@@ -1,39 +1,47 @@
-[tool.poetry]
+[project]
 name = "todo3"
 version = "0.1.1"
 description = ""
-authors = ["Jordy Cuan <jcuan4@gmail.com>"]
+authors = [
+    {name = "Jordy Cuan", email = "jcuan4@gmail.com"},
+]
 readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-fastapi = "^0.101.1"
-uvicorn = "^0.21.1"
-sqlalchemy = "^2.0.20"
-passlib = "^1.7.4"
-bcrypt = "^4.0.1"
-python-multipart = "^0.0.6"
-python-jose = {extras = ["cryptography"], version = "^3.3.0"}
-psycopg2-binary = "^2.9.6"
-alembic = "^1.11.2"
-pytz = "^2023.3"
-pydantic-settings = "^2.0.3"
+requires-python = "~=3.10"
+dependencies = [
+    "alembic~=1.11",
+    "bcrypt~=4.0",
+    "fastapi~=0.101.1",
+    "passlib~=1.7",
+    "psycopg2-binary~=2.9",
+    "pydantic-settings~=2.0",
+    "python-jose[cryptography]~=3.3",
+    "python-multipart~=0.0.6",
+    "pytz~=2023.3",
+    "sqlalchemy~=2.0",
+]
 
 
-[tool.poetry.group.dev.dependencies]
-pycodestyle = "^2.10.0"
-bandit = "^1.7.5"
-black = "^23.3.0"
-mypy = "^1.2.0"
-pre-commit = "^3.2.2"
-isort = "^5.12.0"
-pytest = "^7.4.0"
-hypothesis = "^6.82.4"
-pytest-cov = "^4.1.0"
+[tool.pdm.dev-dependencies]
+develop = [
+    "bandit>=1.7.5",
+    "black>=23.7.0",
+    "flake8>=6.1.0",
+    "isort>=5.12.0",
+    "mypy>=1.5.1",
+    "pre-commit>=3.3.3",
+]
+testing = [
+    "pytest-cov~=4.1",
+    "pytest~=7.4",
+]
 
 [tool.isort]
 profile = "black"
 line_length = 110
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "__pycache__"]
 
 [tool.black]
 line-length = 110
@@ -42,6 +50,24 @@ line-length = 110
 plugins = [
   "pydantic.mypy"
 ]
+python_version = "3.10"
+follow_imports = "skip"
+
+# Settings utils
+[[tool.mypy.overrides]]
+module = "utils.*"
+strict = true
+
+# Settings app
+[[tool.mypy.overrides]]
+module = "app.*"
+strict = false
+
+# Settings tests
+[[tool.mypy.overrides]]
+module = "tests.*"
+strict = false
+
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
@@ -49,15 +75,19 @@ init_typed = true
 warn_required_dynamic_aliases = true
 
 [tool.flake8]
-extend-ignore = "E203"
-
-[flake8]
-extend-ignore = "E203"
+ignore = ["E203", "W503", "F403"]
+max-line-length = 110
+max-complexity = 10
+exclude = [
+    "venv",
+    "__pycache__",
+]
 
 [tool.pytest.ini_options]
 addopts = [
   "--strict-config",
   "--strict-markers",
+  "--disable-pytest-warnings",
 ]
 xfail_strict = true
 python_functions = ["test_*"]
@@ -65,5 +95,5 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-pep517"]
+build-backend = "pdm.pep517.api"

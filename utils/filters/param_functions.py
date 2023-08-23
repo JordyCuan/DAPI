@@ -29,10 +29,12 @@ Note:
 -----
 For more details visit: https://fastapi.tiangolo.com/tutorial/query-params-str-validations/
 """
+from typing import Any
+
 from . import params
 
 
-def FilterParam(**kwargs):  # noqa: N802
+def FilterParam(**kwargs: Any) -> Any:  # noqa: N802
     """
     Functional wrapper around the `FilterParam` class from the `filters.params` module.
 
