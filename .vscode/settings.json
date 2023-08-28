@@ -2,13 +2,13 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
+    "files.readonlyInclude": {
+        "**/.venv/*/**": true,
+    },
     "files.exclude": {
         "**/__pycache__": true,
         "**/.mypy_cache": true,
-        "**/.venv/*/**": true,
-        "**/*.pyc": {
-            "when": ".py"
-        },
+        // "**/.venv/*/**": true,
         "**/package-lock.json": true,
         "**/poetry.lock": true,
         "**/.pytest_cache": true,

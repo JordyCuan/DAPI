@@ -1,18 +1,46 @@
+from typing import Optional, Type
+
+from fastapi import Request, Response
+from fastapi.utils import is_body_allowed_for_status_code
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError, TimeoutError
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware, DispatchFunction, RequestResponseEndpoint
+from starlette.types import ASGIApp
 
-from .exceptions import NotFoundException, ServerError, TimeoutException
+from .responses import BaseErrorResponse, DatabaseErrorResponse, NotFoundErrorResponse, TimeoutErrorResponse
 
 
+# NOTE: HTTPExceptions are automatically handled by the `ExceptionMiddleware` class
+# from the `starlette.middleware.exceptions` module, which FastAPI extends/inherits.
+# In this context, we're only handling other types of exceptions (e.g., SQLAlchemy ones),
+# allowing developers to focus directly on business rules.
+#
+# With love,
+# Jordy Cuan
 class SQLAlchemyExceptionHandlerMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
+    def __init__(
+        self,
+        app: ASGIApp,
+        dispatch: Optional[DispatchFunction] = None,
+        debug: bool = False,
+    ) -> None:
+        self.app = app
+        self.dispatch_func = self.dispatch if dispatch is None else dispatch
+        self.debug = debug
+        self._exception_responses: dict[Type[Exception], Type[BaseErrorResponse]] = {
+            NoResultFound: NotFoundErrorResponse,
+            TimeoutError: TimeoutErrorResponse,
+        }
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         try:
             response = await call_next(request)
-        except NoResultFound as exc:
-            raise NotFoundException from exc
-        except TimeoutError as exc:
-            raise TimeoutException from exc
-        # TODO: Is it necessary to handle MultipleObjectsReturned?
-        # except SQLAlchemyError as exc:
-        #     raise ServerError  # Global default server exception for any other SQLAlchemy error
-        return response
+            return response
+        except SQLAlchemyError as exc:
+            headers = getattr(exc, "headers", None)
+            error_response = self._exception_responses.get(type(exc), DatabaseErrorResponse)
+            status_code = error_response.status_code
+            debug_message = str(exc) if self.debug else None
+
+            if not is_body_allowed_for_status_code(status_code):
+                return Response(status_code=status_code, headers=headers)
+            return error_response(debug_message=debug_message, headers=headers)

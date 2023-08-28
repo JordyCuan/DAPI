@@ -136,20 +136,19 @@ class UpdateModelMixin:
         Raises:
             ValueError: If provided ID doesn't match entity's ID.
         """
-        # TODO: Popping? References elsewhere?
         if id != entity.pop("id", id):
             raise ValueError("ID in the entity does not match the given ID.")
 
         base_query = self.get_base_query()
         query = self.update_queryset(base_query, id=id, entity=entity)
+        instance = query.one()
         self.session.flush()
-        return query.one()
+        return instance
 
     def update_queryset(
         self, base_query: Query[DeclarativeBase], *, id: int, entity: dict[str, Any]
     ) -> Query[DeclarativeBase]:
         query = base_query.filter_by(id=id)
-        assert query.count() == 1, "Update on non existing entry or multiple entries found"
         query.update(entity)  # type: ignore[arg-type]
         return query
 
@@ -170,7 +169,6 @@ class DestroyModelMixin:
 
     def destroy_queryset(self, base_query: Query[DeclarativeBase], *, id: int) -> Query[DeclarativeBase]:
         query = base_query.filter_by(id=id)
-        assert query.count() == 1, "Update on non existing entry or multiple entries found"
         return query
 
     def perform_destroy(self, instance: DeclarativeBase) -> None:

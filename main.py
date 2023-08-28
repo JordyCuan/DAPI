@@ -11,7 +11,7 @@ app = FastAPI()
 
 # APIBaseModel.metadata.create_all(bind=engine)
 
-app.add_middleware(SQLAlchemyExceptionHandlerMiddleware)
+app.add_middleware(SQLAlchemyExceptionHandlerMiddleware, debug=True)
 
 app.include_router(auth_router)
 app.include_router(todo_router)

@@ -8,11 +8,11 @@ from utils.database.repository import BaseRepository
 
 from .core import get_database
 
-_T = TypeVar("_T", bound=BaseRepository)
+T = TypeVar("T", bound=BaseRepository)
 
 
-def apply_session(target: Type[_T]) -> Callable[[Session], _T]:
-    def _apply_session(session: Session = Depends(get_database)) -> _T:
+def apply_session(target: Type[T]) -> Callable[[Session], T]:
+    def _apply_session(session: Session = Depends(get_database)) -> T:
         return target(session=session)
 
     return _apply_session
