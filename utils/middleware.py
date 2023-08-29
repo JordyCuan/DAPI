@@ -36,11 +36,13 @@ class SQLAlchemyExceptionHandlerMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
             return response
         except SQLAlchemyError as exc:
-            headers = getattr(exc, "headers", None)
             error_response = self._exception_responses.get(type(exc), DatabaseErrorResponse)
             status_code = error_response.status_code
             debug_message = str(exc) if self.debug else None
 
+            # NOTE: This is not necessary since fastapi exception handlers handle this part before it
+            # reaches in here. This is going to be remove on future commit and left as is right now
+            # just for references.
             if not is_body_allowed_for_status_code(status_code):
-                return Response(status_code=status_code, headers=headers)
-            return error_response(debug_message=debug_message, headers=headers)
+                return Response(status_code=status_code)
+            return error_response(debug_message=debug_message)

@@ -19,15 +19,11 @@ class BaseErrorResponse(JSONResponse):
     def __init__(
         self,
         debug_message: Optional[str] = None,
-        headers: Optional[dict[str, str]] = None,
-        media_type: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(
             content=self.get_content(debug_message),
             status_code=self.status_code,
-            headers=headers,
-            media_type=media_type,
             **kwargs,
         )
 

@@ -187,7 +187,7 @@ class BaseRepository(
     UpdateModelMixin,
     DestroyModelMixin,
 ):
-    model: Type[DeclarativeBase]
+    model: Optional[Type[DeclarativeBase]]
 
     def __init__(self, *, session: Session):
         """

@@ -13,13 +13,6 @@ from utils.database.repository import BaseRepository
 _T = TypeVar("_T", bound=BaseRepository)
 
 
-# def apply_session(target: Type[_T]) -> Callable[[Session], _T]:
-#     def _apply_session(session: Session = Depends(get_database)) -> _T:
-#         return target(session=session)
-
-#     return _apply_session
-
-
 # async def valid_model_id(id: int) -> MappingResult:
 #     post = await service.get_by_id(id=id)
 #     if not post:
