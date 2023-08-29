@@ -1,4 +1,4 @@
-from typing import Annotated, List
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -8,9 +8,9 @@ from app.database.core import get_database
 from utils.exceptions import NotFoundException, UnauthorizedException
 
 from .dependencies import get_todo_filter_manager, get_todo_service
+from .docs import create_todo_docs, destroy_todo_docs, list_todo_docs, retrieve_todo_docs, update_todo_docs
 from .filters import TodoFilterManager, TodoFilterSchema
 from .models import Todo as TodoModel
-from .repository import Todo as TodoModel
 from .schemas import Todo as TodoSchema
 from .services import TodoService
 
@@ -108,33 +108,34 @@ router = APIRouter(prefix="/todo", tags=["todo"])
 
 TodoServiceAnnotation = Annotated[TodoService, Depends(get_todo_service)]
 
+# NOTE: IMPORTANT! Wherever we refer to basic http methods operations (ie. get, post, update, delete) we use retrieve, list, create, update, destroy
 
-@router.get("/{id}", status_code=200)
-async def read_item(id: int, service: TodoServiceAnnotation):
+
+@router.get("/{id}", **retrieve_todo_docs)
+async def retrieve_todo(id: int, service: TodoServiceAnnotation):
     return service.get_by_id(id=id)
 
 
-@router.get("/", status_code=200)
-async def get_all_todo(
+@router.get("/", **list_todo_docs)
+async def list_todo(
     service: TodoServiceAnnotation, filter_manager: TodoFilterManager = Depends(get_todo_filter_manager)
 ):
     return service.list(filter_manager=filter_manager)
 
 
-@router.post("/", status_code=201)
+@router.post("/", **create_todo_docs)
 async def create_todo(payload: TodoSchema, service: TodoServiceAnnotation):
     data = payload.model_dump()
     service.create(entity=data)
     return data
 
 
-@router.put("/{id}")
+@router.put("/{id}", **update_todo_docs)
 async def update_todo(id: int, payload: TodoSchema, service: TodoServiceAnnotation):
     data = payload.model_dump(exclude_unset=True)
-    service.update(id=id, entity=data)
-    return data
+    return service.update(id=id, entity=data)
 
 
-@router.delete("/{id}", status_code=204)
+@router.delete("/{id}", **destroy_todo_docs)
 async def destroy_todo(id: int, service: TodoServiceAnnotation):
     return service.destroy(id=id)

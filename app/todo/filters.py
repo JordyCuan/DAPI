@@ -1,13 +1,14 @@
-from typing import List, Optional
-
-from sqlalchemy.orm import Query
+from typing import Annotated, Optional
 
 from utils.filters import BaseFilterManager, FilterParam, FilterSchema
 
 from .models import Todo
 
+# from sqlalchemy.orm import Query
+# from fastapi import Query
 
-class TodoFilterSchema(FilterSchema):
+
+class TodoFilterSchema(FilterSchema, extra="forbid"):
     title__ieq: Optional[str] = FilterParam()
     priority__gt: Optional[int] = FilterParam()
     priority__gte: Optional[int] = FilterParam()
@@ -15,10 +16,19 @@ class TodoFilterSchema(FilterSchema):
     priority__lte: Optional[int] = FilterParam()
     priority__eq: Optional[int] = FilterParam()
     complete__eq: Optional[bool] = FilterParam()
-    description__contains: Optional[str] = FilterParam()
+    description__contains: Annotated[str | None, FilterParam()]
     description__icontains: Optional[str] = FilterParam()
+
+    # Annotated[str | None, FilterParam()]
     # title__in: list[str] = FilterParam()  # TODO: But then, how to gather the elements to get the Query?
-    # ordering: List[str] = FilterParam()  # TODO: 1. Bug. 2.Let's fine a way to set a customizable field.
+
+    # NOTE: When List[] = Query() param is an inner object it is NOT threated as query param but Body()
+    # ordering: Optional[List[str]] = FilterParam()
+    # ordering: List[int] = Query(None)
+    # ordering: Annotated[list[str] | None, Query()] = None
+
+    # class Meta:
+    #     model = Todo
 
 
 class TodoFilterManager(BaseFilterManager):
