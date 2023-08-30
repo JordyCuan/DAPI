@@ -43,7 +43,7 @@ class FilterMeta:
         # NOTE: This is not used yet. WIP!
         # self.fields = getattr(options, "fields", None)
         # self.exclude = getattr(options, "exclude", None)
-        # allowed_order_by_fields  # type: ignore
+        # allowed_order_by_fields
         # order_by_field_name
 
 

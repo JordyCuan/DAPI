@@ -2,6 +2,7 @@ from typing import Any, Callable, Dict, Optional, Type
 
 from sqlalchemy import and_, asc, desc
 from sqlalchemy.orm import DeclarativeBase, Query
+from sqlalchemy.sql.expression import UnaryExpression
 
 from .schemas import FilterSchema
 
@@ -116,7 +117,7 @@ class BaseFilterManager:
         if self.ordering is None:
             return query
 
-        order_expressions: list = []  # type: ignore[type-arg]
+        order_expressions: list[UnaryExpression[DeclarativeBase]] = []
         for field in self.ordering:
             if field.startswith("-"):
                 attr = getattr(self.model, field[1:])

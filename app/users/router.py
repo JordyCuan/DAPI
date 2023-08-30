@@ -1,7 +1,9 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.database.core import get_database
+from app.database import get_database
 from utils.crypt import get_bcrypt_context
 
 from .models import User
@@ -14,9 +16,10 @@ router = APIRouter(prefix="/user", tags=["user"])
 
 
 @router.post("/create/user", status_code=201)
-async def create_new_user(user: CreateUser, db: Session = Depends(get_database)):
-    user_model = User(**user.model_dump())
-    user_model.password = bcrypt_context.get_password_hash(user_model.password)
+async def create_new_user(schema: CreateUser, db: Session = Depends(get_database)) -> Any:
+    data = schema.model_dump(exclude_unset=True, exclude_none=True)
+    password = data.pop("password")
+    user_model = User(hashed_password=bcrypt_context.get_password_hash(password), **data)
 
     db.add(user_model)
     db.commit()
