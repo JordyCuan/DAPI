@@ -2,17 +2,18 @@ from typing import Optional
 
 import pytest
 from sqlalchemy import Column, Integer, String, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from utils.filters import FilterParam
 from utils.filters.core import BaseFilterManager
 from utils.filters.schemas import FilterSchema
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
-class SampleModel(Base):  # type: ignore[valid-type, misc]
+class SampleModel(Base):
     __tablename__ = "sample"
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -24,40 +25,42 @@ class SampleFilterSchema(FilterSchema):
 
 
 @pytest.fixture
-def sample_session():
+def sample_session() -> Session:
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    return Session()
+    session = sessionmaker(bind=engine)
+    return session()
 
 
 class TestBaseFilterManager:
-    def test_filter_queryset(self, sample_session):
+    def test_filter_queryset(self, sample_session: Session) -> None:
         filter_schema = SampleFilterSchema(**{"name__icontains": "test"})
 
         filter_manager = BaseFilterManager(filters=filter_schema)
         filter_manager.model = SampleModel
 
         query = sample_session.query(SampleModel)
-        filtered_query = filter_manager.filter_queryset(query)
+        filtered_query = filter_manager.filter_queryset(query)  # type: ignore[arg-type]
 
         # Asserting that the filter conditions were added to the query
         assert "ILIKE" in str(filtered_query) or "LIKE lower(" in str(filtered_query)
 
-    def test_order_by_queryset(self, sample_session):
-        filter_manager = BaseFilterManager(filters=FilterSchema())
+        # Asserting the query is the same when filters is empty
+        filter_manager.filters = {}
+        query = sample_session.query(SampleModel)
+        filter_is_empty_query = filter_manager.filter_queryset(query)  # type: ignore[arg-type]
+        assert filter_is_empty_query == query
+
+    def test_order_by_queryset(self, sample_session: Session) -> None:
+        filter_manager = BaseFilterManager(filters=FilterSchema(), ordering=["-name", "+age", "id"])
         filter_manager.model = SampleModel
-        filter_manager.ordering = ["-name"]
 
         query = sample_session.query(SampleModel)
-        ordered_query = filter_manager.order_by_queryset(query)
-
-        # Asserting that the order_by condition was added to the query
+        ordered_query = filter_manager.order_by_queryset(query)  # type: ignore[arg-type]
         assert "ORDER BY" in str(ordered_query)
 
-    def test_paginate_queryset(self, sample_session):
-        filter_manager = BaseFilterManager(filters=FilterSchema())
+        # No ordering case
         query = sample_session.query(SampleModel)
-        paginated_query = filter_manager.paginate_queryset(query)
-
-        assert paginated_query == query
+        filter_manager.ordering = None
+        query_without_ordering = filter_manager.order_by_queryset(query)  # type: ignore[arg-type]
+        assert query_without_ordering == query

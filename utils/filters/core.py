@@ -89,7 +89,7 @@ class BaseFilterManager:
         Query
             The filtered query.
         """
-        if self.filters is None:
+        if not self.filters:
             return query
         conditions = []
         for key, value in self.filters.items():
@@ -126,8 +126,3 @@ class BaseFilterManager:
                 order_expressions.append(asc(attr))
 
         return query.order_by(*order_expressions)
-
-    def paginate_queryset(self, query: Query[DeclarativeBase]) -> Query[DeclarativeBase]:
-        # TODO: Implement this feature. Is it a part of this?
-        return query
-        # return query.offset((page - 1) * page_size).limit(page_size)

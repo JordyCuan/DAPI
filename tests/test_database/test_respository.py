@@ -96,6 +96,12 @@ class TestBaseRepository:
         filter_manager_mock.filter_queryset.assert_called()
         filter_manager_mock.order_by_queryset.assert_called()
 
+    def test_list_with_pagination_manager(self) -> None:
+        pagination_manager_mock = MagicMock()
+        self.repository.get_base_query = MagicMock()  # type: ignore
+        self.repository.list(pagination_manager=pagination_manager_mock, name="Test")
+        pagination_manager_mock.paginate_queryset.assert_called()
+
     def test_perform_commit(self) -> None:
         session_mock = MagicMock()
         self.repository.session = session_mock
