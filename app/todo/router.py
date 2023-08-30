@@ -7,7 +7,7 @@ from app.auth.router import get_current_user
 from app.database.core import get_database
 from utils.exceptions import NotFoundException, UnauthorizedException
 
-from .dependencies import get_todo_filter_manager, get_todo_service
+from .dependencies import get_pagination, get_todo_filter_manager, get_todo_service
 from .docs import create_todo_docs, destroy_todo_docs, list_todo_docs, retrieve_todo_docs, update_todo_docs
 from .filters import TodoFilterManager, TodoFilterSchema
 from .models import Todo as TodoModel
@@ -116,11 +116,16 @@ async def retrieve_todo(id: int, service: TodoServiceAnnotation):
     return service.get_by_id(id=id)
 
 
+from utils.pagination import LimitOffsetPagination
+
+
 @router.get("/", **list_todo_docs)
 async def list_todo(
-    service: TodoServiceAnnotation, filter_manager: TodoFilterManager = Depends(get_todo_filter_manager)
+    service: TodoServiceAnnotation,
+    filter_manager: TodoFilterManager = Depends(get_todo_filter_manager),
+    pagination_manager: LimitOffsetPagination = Depends(get_pagination),
 ):
-    return service.list(filter_manager=filter_manager)
+    return service.list(filter_manager=filter_manager, pagination_manager=pagination_manager)
 
 
 @router.post("/", **create_todo_docs)

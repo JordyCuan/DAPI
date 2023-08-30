@@ -1,4 +1,4 @@
-from utils.schemas.docs import FastAPIRouteParameters
+from utils.docs import FastAPIRouteParameters
 
 
 class RetrieveTodoDocs(FastAPIRouteParameters):
@@ -21,8 +21,8 @@ class DestroyTodoDocs(FastAPIRouteParameters):
     status_code: int = 204
 
 
-retrieve_todo_docs = RetrieveTodoDocs()
-list_todo_docs = ListTodoDocs()
-create_todo_docs = CreateTodoDocs()
-update_todo_docs = UpdateTodoDocs()
-destroy_todo_docs = DestroyTodoDocs()
+retrieve_todo_docs = RetrieveTodoDocs().model_dump()
+list_todo_docs = ListTodoDocs().model_dump()
+create_todo_docs = CreateTodoDocs().model_dump()
+update_todo_docs = UpdateTodoDocs().model_dump()
+destroy_todo_docs = DestroyTodoDocs().model_dump()

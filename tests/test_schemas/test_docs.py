@@ -1,7 +1,7 @@
-from utils.schemas.docs import FastAPIRouteParameters
+from utils.docs import FastAPIRouteParameters
 
 
-def test_fast_api_route_parameters_defaults():
+def test_fast_api_route_parameters_defaults() -> None:
     params = FastAPIRouteParameters()
 
     assert params.tags is None
@@ -17,7 +17,7 @@ def test_fast_api_route_parameters_defaults():
     assert params.openapi_extra is None
 
 
-def test_fast_api_route_parameters_custom_values():
+def test_fast_api_route_parameters_custom_values() -> None:
     custom_values = {
         "tags": ["sample"],
         "summary": "Sample summary",

@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.database.core import get_database
+from utils.pagination import LimitOffsetPagination, LimitOffsetSchema
 
 from .filters import FilterParam, TodoFilterManager, TodoFilterSchema
 from .repository import TodoRepository
@@ -24,3 +25,8 @@ def get_todo_filter_manager(
     ordering: Optional[list[str]] = FilterParam(),
 ) -> TodoFilterManager:
     return TodoFilterManager(filters=filters, ordering=ordering)
+
+
+# TODO: This one might be "global" for project due its (possible) immutable across domains nature
+def get_pagination(pagination: LimitOffsetSchema = Depends()) -> LimitOffsetPagination:
+    return LimitOffsetPagination(pagination)

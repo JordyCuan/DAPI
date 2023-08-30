@@ -2,7 +2,7 @@ from typing import Any, Optional, Protocol
 
 from sqlalchemy.orm import DeclarativeBase
 
-from .database.repository import FilterManagerProtocol
+from .database.repository import FilterManagerProtocol, PaginationManagerProtocol
 
 
 class RepositoryProtocol(Protocol):  # pragma: no cover
@@ -12,10 +12,13 @@ class RepositoryProtocol(Protocol):  # pragma: no cover
     def retrieve(self, **filters: Any) -> DeclarativeBase:
         pass
 
-    def set_filter_manager(self, *, filter_manager: Optional[FilterManagerProtocol]) -> None:
-        pass
-
-    def list(self, **filters: Any) -> list[DeclarativeBase]:
+    def list(
+        self,
+        *,
+        filter_manager: Optional[FilterManagerProtocol] = None,
+        pagination_manager: Optional[PaginationManagerProtocol] = None,
+        **filters: Any,
+    ) -> list[DeclarativeBase]:
         pass
 
     def create(self, *, entity: dict[str, Any]) -> DeclarativeBase:
@@ -39,10 +42,14 @@ class BaseService:
         return self.repository.retrieve(**filters)
 
     def list(
-        self, filter_manager: Optional[FilterManagerProtocol] = None, **filters: Any
+        self,
+        filter_manager: Optional[FilterManagerProtocol] = None,
+        pagination_manager: Optional[PaginationManagerProtocol] = None,
+        **filters: Any,
     ) -> list[DeclarativeBase]:
-        self.repository.set_filter_manager(filter_manager=filter_manager)
-        return self.repository.list(**filters)
+        return self.repository.list(
+            filter_manager=filter_manager, pagination_manager=pagination_manager, **filters
+        )
 
     def create(self, *, entity: dict[str, Any]) -> DeclarativeBase:
         return self.repository.create(entity=entity)

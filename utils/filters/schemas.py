@@ -121,8 +121,3 @@ class FilterSchema(BaseModel):
                         f"Filter attribute {key} should be a valid lookup: {', '.join(valid_lookups)}"
                     )
         return values
-
-
-# class PaginationParams(BaseModel):
-#     page: Optional[int] = Field(1, gt=0)
-#     page_size: Optional[int] = Field(10, gt=0, le=100)

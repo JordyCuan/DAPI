@@ -33,8 +33,8 @@ class TestBaseRepository:
         self.repository.create(entity=entity)
 
         created_entity = self.session.query(MockModel).first()
-        assert created_entity.id == 1
-        assert created_entity.name == "Test"
+        assert created_entity.id == 1  # type: ignore
+        assert created_entity.name == "Test"  # type: ignore
 
         with pytest.raises(IntegrityError):
             self.repository.create(entity=entity)
@@ -44,16 +44,16 @@ class TestBaseRepository:
         self.repository.create(entity=entity)
 
         retrieved_entity = self.repository.retrieve_by_id(id=1)
-        assert retrieved_entity.id == 1
-        assert retrieved_entity.name == "Test"
+        assert retrieved_entity.id == 1  # type: ignore
+        assert retrieved_entity.name == "Test"  # type: ignore
 
     def test_retrieve(self) -> None:
         entity = {"id": 1, "name": "Test"}
         self.repository.create(entity=entity)
 
         retrieved_entity = self.repository.retrieve(name="Test")
-        assert retrieved_entity.id == 1
-        assert retrieved_entity.name == "Test"
+        assert retrieved_entity.id == 1  # type: ignore
+        assert retrieved_entity.name == "Test"  # type: ignore
 
     def test_update(self) -> None:
         entity = {"id": 1, "name": "Test"}
@@ -69,15 +69,15 @@ class TestBaseRepository:
             self.repository.retrieve(name="Test")
 
         retrieved_entity = self.repository.retrieve(name="Test_Updated")
-        assert retrieved_entity.id == 1
-        assert retrieved_entity.name == "Test_Updated"
+        assert retrieved_entity.id == 1  # type: ignore
+        assert retrieved_entity.name == "Test_Updated"  # type: ignore
 
         retrieved_entity = self.repository.update(id=1, entity={"name": "Test_Update_without_id"})
         self.session.commit()
 
         retrieved_entity = self.repository.retrieve(name="Test_Update_without_id")
-        assert retrieved_entity.id == 1
-        assert retrieved_entity.name == "Test_Update_without_id"
+        assert retrieved_entity.id == 1  # type: ignore
+        assert retrieved_entity.name == "Test_Update_without_id"  # type: ignore
 
     def test_destroy_existing(self) -> None:
         entity = MockModel(id=4, name="Test")
@@ -91,9 +91,8 @@ class TestBaseRepository:
 
     def test_list_with_filter_manager(self) -> None:
         filter_manager_mock = MagicMock()
-        self.repository.get_base_query = MagicMock()
-        self.repository.set_filter_manager(filter_manager_mock)
-        self.repository.list(name="Test")
+        self.repository.get_base_query = MagicMock()  # type: ignore
+        self.repository.list(filter_manager=filter_manager_mock, name="Test")
         filter_manager_mock.filter_queryset.assert_called()
         filter_manager_mock.order_by_queryset.assert_called()
 
@@ -102,21 +101,6 @@ class TestBaseRepository:
         self.repository.session = session_mock
         self.repository.perform_commit()
         session_mock.commit.assert_called()
-
-    def test_filter_queryset(self) -> None:
-        query_mock = MagicMock()
-        result = self.repository.filter_queryset(query_mock)
-        assert result == query_mock
-
-    def test_order_by_queryset(self) -> None:
-        query_mock = MagicMock()
-        result = self.repository.order_by_queryset(query_mock)
-        assert result == query_mock
-
-    def test_paginate_queryset(self) -> None:
-        query_mock = MagicMock()
-        result = self.repository.paginate_queryset(query_mock)
-        assert result == query_mock
 
     def test_update_raises_value_error_on_mismatched_id(self) -> None:
         with pytest.raises(ValueError, match="ID in the entity does not match the given ID."):

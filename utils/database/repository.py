@@ -13,19 +13,26 @@ class FilterManagerProtocol(Protocol):  # pragma: no cover
         pass
 
 
-# class PaginationManagerProtocol(Protocol):
-#     def paginate_queryset(self) -> Query:  # pragma: no cover
-#         pass
+class PaginationManagerProtocol(Protocol):  # pragma: no cover
+    def paginate_queryset(self, query: Query[DeclarativeBase]) -> Query[DeclarativeBase]:
+        pass
 
 
 class ListModelMixin:
     session: Session
     get_base_query: Callable[..., Query[DeclarativeBase]]
-    filter_manager: Optional[FilterManagerProtocol] = None
 
-    def list(self, **filters: Any) -> list[DeclarativeBase]:
+    def list(
+        self,
+        *,
+        filter_manager: Optional[FilterManagerProtocol] = None,
+        pagination_manager: Optional[PaginationManagerProtocol] = None,
+        **filters: Any,
+    ) -> list[DeclarativeBase]:
         """
         Args:
+            filter_manager: Object implementing `filter_queryset` and `order_by_queryset` methods
+            pagination_manager: Object implementing `paginate_queryset` method
             **filters: Filters to refine the query results.
 
         Returns:
@@ -34,36 +41,16 @@ class ListModelMixin:
 
         base_query = self.get_base_query()
         query = self.list_queryset(base_query, **filters)
-        query = self.filter_queryset(query)
-        query = self.order_by_queryset(query)
+        if filter_manager:
+            query = filter_manager.filter_queryset(query)
+            query = filter_manager.order_by_queryset(query)
+        if pagination_manager:
+            query = pagination_manager.paginate_queryset(query)
         return query.all()
 
     def list_queryset(self, base_query: Query[DeclarativeBase], **filters: Any) -> Query[DeclarativeBase]:
         """Override for custom list fetching logic."""
         return base_query.filter_by(**filters)
-
-    def filter_queryset(self, query: Query[DeclarativeBase]) -> Query[DeclarativeBase]:
-        """Override for custom filter logic."""
-        if self.filter_manager:
-            query = self.filter_manager.filter_queryset(query)
-        return query
-
-    def order_by_queryset(self, query: Query[DeclarativeBase]) -> Query[DeclarativeBase]:
-        """Override for custom ordering logic."""
-        if self.filter_manager:
-            query = self.filter_manager.order_by_queryset(query)
-        return query
-
-    def paginate_queryset(self, query: Query[DeclarativeBase]) -> Query[DeclarativeBase]:
-        """Override for custom pagination logic."""
-        return query
-
-    def set_filter_manager(self, filter_manager: FilterManagerProtocol) -> None:
-        self.filter_manager = filter_manager  # NOTE: How to keep the repository stateless?
-
-    # def set_pagination_manager(self, pagination_manager: PaginationManagerProtocol) -> None:
-    #     if pagination_manager:
-    #         setattr(self, "paginate_queryset", pagination_manager.filter_queryset)
 
 
 class RetrieveModelMixin:
