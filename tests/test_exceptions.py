@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from fastapi import HTTPException
 
-from utils.exceptions import HTTPBaseException
+from utils.exceptions.generic import HTTPBaseException
 
 
 class TestSuperCall(unittest.TestCase):

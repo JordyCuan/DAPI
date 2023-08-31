@@ -1,8 +1,10 @@
-from typing import Any, Optional, Protocol
+from typing import Any, Generic, Optional, Protocol, TypeVar
 
 from sqlalchemy.orm import DeclarativeBase
 
 from .database.repository import FilterManagerProtocol, PaginationManagerProtocol
+
+RepositoryType = TypeVar("RepositoryType", bound="RepositoryProtocol")
 
 
 class RepositoryProtocol(Protocol):  # pragma: no cover
@@ -31,8 +33,8 @@ class RepositoryProtocol(Protocol):  # pragma: no cover
         pass
 
 
-class BaseService:
-    def __init__(self, *, repository: RepositoryProtocol):
+class BaseService(Generic[RepositoryType]):
+    def __init__(self, *, repository: RepositoryType):
         self.repository = repository
 
     def get_by_id(self, *, id: int) -> DeclarativeBase:

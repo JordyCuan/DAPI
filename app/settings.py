@@ -18,6 +18,7 @@ class Settings(BaseSettings, DatabaseSettingsMixin):
     # SECURITY WARNING: keep the secret key used in production secret!
     SECRET_KEY: str = "lhgGHo7t8O7Ff68OF688o68O6F6fF68O"
     JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
 
     ALLOWED_HOSTS: list = []
 

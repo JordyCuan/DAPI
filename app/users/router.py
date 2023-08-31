@@ -15,7 +15,7 @@ bcrypt_context = get_bcrypt_context(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter(prefix="/user", tags=["user"])
 
 
-@router.post("/create/user", status_code=201)
+@router.post("/", status_code=201)
 async def create_new_user(schema: CreateUser, db: Session = Depends(get_database)) -> Any:
     data = schema.model_dump(exclude_unset=True, exclude_none=True)
     password = data.pop("password")

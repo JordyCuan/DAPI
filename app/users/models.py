@@ -18,4 +18,4 @@ class User(APIBaseModel):
     is_active: Mapped[bool] = mapped_column(default=True)
     phone_number: Mapped[str] = mapped_column(nullable=True)
 
-    todos: Mapped[list["Todo"]] = relationship(back_populates="owner", cascade="all, delete-orphan")
+    todos: Mapped[list["Todo"]] = relationship(back_populates="owner")

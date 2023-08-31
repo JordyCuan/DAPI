@@ -60,10 +60,10 @@ class TestLimitOffsetPagination:
         assert paginator.count == 10
 
     def test_paginated_response(self) -> None:
-        schema = LimitOffsetSchema(limit=5, offset=5)
+        schema = LimitOffsetSchema(limit=4, offset=8)
         paginator = LimitOffsetPagination(schema=schema)
         paginator.count = 10
-        response = paginator.get_paginated_response(data=[{"id": 1, "name": "test"}])
+        response = paginator.get_paginated_response(results=[{"id": 1, "name": "test"}])
         assert response.status_code == 200
 
         body = json.loads(response.body)

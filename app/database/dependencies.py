@@ -4,11 +4,9 @@ from typing import Callable, Generator, Type, TypeVar
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from utils.database.repository import BaseRepository
-
 from .core import session_maker
 
-T = TypeVar("T", bound=BaseRepository)
+T = TypeVar("T")
 
 
 def get_database() -> Generator[Session, None, None]:

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from utils.database.models import APIBaseModel
 from utils.database.repository import BaseRepository
-from utils.exceptions import ImproperlyConfigured
+from utils.exceptions.generic import ImproperlyConfigured
 
 
 class MockModel(APIBaseModel):

@@ -2,7 +2,7 @@ from typing import Any, Callable, Generic, Optional, Protocol, Type, TypeVar
 
 from sqlalchemy.orm import DeclarativeBase, Query, Session
 
-from utils.exceptions import ImproperlyConfigured
+from utils.exceptions.generic import ImproperlyConfigured
 
 ModelType = TypeVar("ModelType", bound=DeclarativeBase)
 
