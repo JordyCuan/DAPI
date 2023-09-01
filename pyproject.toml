@@ -1,6 +1,6 @@
 [project]
 name = "todo3"
-version = "0.1.1"
+version = "0.0.3"
 description = ""
 authors = [
     {name = "Jordy Cuan", email = "jcuan4@gmail.com"},
@@ -11,13 +11,10 @@ requires-python = "~=3.10"
 dependencies = [
     "alembic~=1.11",
     "bcrypt~=4.0",
-    "fastapi~=0.103.0",
-    "httpx~=0.23.0",
+    "fastapi[all]~=0.103.0",
     "passlib~=1.7",
     "psycopg2-binary~=2.9",
-    "pydantic-settings~=2.0",
     "python-jose[cryptography]~=3.3",
-    "python-multipart~=0.0.6",
     "pytz~=2023.3",
     "sqlalchemy~=2.0",
 ]
@@ -39,13 +36,13 @@ testing = [
 
 [tool.isort]
 profile = "black"
-line_length = 110
+line_length = 120
 
 [tool.bandit]
 exclude_dirs = ["tests", ".venv", "__pycache__"]
 
 [tool.black]
-line-length = 110
+line-length = 120
 
 [tool.mypy]
 plugins = [
@@ -79,7 +76,7 @@ warn_required_dynamic_aliases = true
 
 [tool.flake8]
 ignore = ["E203", "W503", "F403"]
-max-line-length = 110
+max-line-length = 120
 max-complexity = 10
 exclude = [
     "venv",
