@@ -1,6 +1,6 @@
-from utils.database.models import APIBaseModel as Base
+from utils.database.models import APIBaseModel
 
 
 # NOTE: Base model for the current app. Used by Alembic
-class APIBaseModel(Base):
-    pass
+class Base(APIBaseModel):
+    __abstract__ = True

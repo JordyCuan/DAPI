@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Create venv
+        run: |
+          python3.11 -m venv .venv
+
+      - name: Check PDM path
+        run: |
+          echo "PDM path:"
+          echo $(which pdm)
+
+      - name: Install dependencies
+        run: |
+          pdm install -G:all
+
+      - name: Run tests
+        run: pdm run pytest -s --cache-clear --disable-warnings tests/ --cov-report term-missing:skip-covered --cov=./utils/
+          
+  deploy:
+    runs-on: self-hosted
+    needs: build
+
+    steps:
+      # Kill uvicorn server, if running already
+      - name: Kill uvicorn
+        run: pkill uvicorn || true
+
+      # Run uvicorn server
+      - name: Run uvicorn
+        run: |
+          RUNNER_TRACKING_ID=""
+          pdm run uvicorn app.main:app --host 0.0.0.0 --port 8000
