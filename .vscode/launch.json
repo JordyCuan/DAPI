@@ -45,8 +45,7 @@
             ],
             "justMyCode": false,
             "console": "integratedTerminal",
-            "env": {
-            },
+            "env": {},
         }
     ]
 }

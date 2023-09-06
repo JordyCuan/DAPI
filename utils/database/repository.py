@@ -8,15 +8,15 @@ ModelType = TypeVar("ModelType", bound=DeclarativeBase)
 
 
 class FilterManagerProtocol(Protocol):  # pragma: no cover
-    def filter_queryset(self, query: Query[ModelType]) -> Query[ModelType]:
+    def filter_queryset(self, query: Query[ModelType]) -> Query[ModelType]:  # type: ignore
         pass
 
-    def order_by_queryset(self, query: Query[ModelType]) -> Query[ModelType]:
+    def order_by_queryset(self, query: Query[ModelType]) -> Query[ModelType]:  # type: ignore
         pass
 
 
 class PaginationManagerProtocol(Protocol):  # pragma: no cover
-    def paginate_queryset(self, query: Query[ModelType]) -> Query[ModelType]:
+    def paginate_queryset(self, query: Query[ModelType]) -> Query[ModelType]:  # type: ignore
         pass
 
 

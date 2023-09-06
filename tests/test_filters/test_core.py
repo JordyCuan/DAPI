@@ -1,10 +1,10 @@
 from typing import Optional
 
 import pytest
+from fastapi import Query
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
-from utils.filters import FilterParam
 from utils.filters.core import BaseFilterManager
 from utils.filters.schemas import FilterSchema
 
@@ -21,7 +21,7 @@ class SampleModel(Base):
 
 
 class SampleFilterSchema(FilterSchema):
-    name__icontains: Optional[str] = FilterParam()
+    name__icontains: Optional[str] = Query(None)
 
 
 @pytest.fixture

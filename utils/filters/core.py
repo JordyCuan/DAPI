@@ -2,7 +2,7 @@ from typing import Any, Callable, Dict, Optional, Type
 
 from sqlalchemy import and_, asc, desc
 from sqlalchemy.orm import DeclarativeBase, Query
-from sqlalchemy.sql.expression import UnaryExpression
+from sqlalchemy.sql.expression import ColumnExpressionArgument, UnaryExpression
 
 from .schemas import FilterSchema
 
@@ -92,7 +92,7 @@ class BaseFilterManager:
         """
         if not self.filters:
             return query
-        conditions = []
+        conditions: list[ColumnExpressionArgument[bool]] = []
         for key, value in self.filters.items():
             if "__" in key:
                 field, op = key.split("__")

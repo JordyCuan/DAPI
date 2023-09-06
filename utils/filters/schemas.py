@@ -112,7 +112,6 @@ class FilterSchema(BaseModel):
         """
 
         valid_lookups = ["gt", "gte", "lt", "lte", "eq", "ieq", "contains", "icontains"]
-        # TODO: valid_attrs = valid_lookups +
         for key in values.keys():
             if key.count("__") == 1:
                 suffix = key.split("__")[-1]
